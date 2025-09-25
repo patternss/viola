@@ -1,0 +1,53 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Viola Chat (SPA)</title>
+  <link rel="stylesheet" href="/static/styles.css">
+</head>
+<body>
+  <div id="app">
+    <header>
+      <h1>Viola Chat</h1>
+    </header>
+
+    <main>
+      <div class="controls">
+        <fieldset class="tutor-tools">
+          <legend>Tutor tools</legend>
+          <label><input type="checkbox" name="tutor_tool" value="pedagogy_prompt"> pedagogy_prompt</label>
+          <label><input type="checkbox" name="tutor_tool" value="RAG"> RAG</label>
+          <label><input type="checkbox" name="tutor_tool" value="guardrails"> guardrails</label>
+          <label><input type="checkbox" name="tutor_tool" value="evaluator"> evaluator</label>
+        </fieldset>
+
+        <div class="selectors">
+          <label><span class="label-text">Topic</span>
+            <select id="topicSelect">
+              <option value="Tekoälyn historia">Tekoälyn historia</option>
+              <option value="Tekoälyn etiikka">Tekoälyn etiikka</option>
+              <option value="Tekoälyn käyttökohteet">Tekoälyn käyttökohteet</option>
+            </select>
+          </label>
+          <label><span class="label-text">Model</span>
+            <select id="modelSelect">
+              <option value="Poro-2">Poro-2</option>
+              <option value="deepseek-r1">deepseek-r1</option>
+            </select>
+          </label>
+        </div>
+      </div>
+
+      
+      <ul id="messages" class="messages" aria-live="polite"></ul>
+
+      <form id="messageForm">
+        <input id="inputText" placeholder="Type a message and press Enter…" autocomplete="off" />
+        <button type="submit">Send</button>
+      </form>
+    </main>
+  </div>
+  <script src="/static/app.js"></script>
+</body>
+</html>

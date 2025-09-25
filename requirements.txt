@@ -1,0 +1,12 @@
+fastapi
+uvicorn[standard]
+aiofiles
+anyio
+pydantic
+ollama
+jinja2
+langchain-community
+chromadb
+sentence-transformers
+torch
+pyarrow

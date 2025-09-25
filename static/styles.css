@@ -1,0 +1,306 @@
+/* Reset and base styles */
+* {
+  box-sizing: border-box;
+  font-family: Inter, 'Segoe UI', Roboto, Arial, sans-serif;
+}
+
+html, body {
+  height: 100%;
+  margin: 0;
+}
+
+body {
+  background: linear-gradient(180deg, #0f172a 0%, #0b1130 60%);
+  color: #eef2ff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* App layout */
+#app {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+}
+
+header {
+  margin-bottom: 20px;
+}
+
+header h1 {
+  margin: 0;
+  font-size: 34px;
+  letter-spacing: 0.6px;
+  background: linear-gradient(90deg, #a78bfa, #60a5fa);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+main {
+  width: min(900px, 96%);
+  max-width: 900px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+/* Controls section */
+.controls {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  padding: 12px;
+  background: rgba(255, 255, 255, 0.02);
+  border-radius: 10px;
+  margin-top: 1em;
+  margin-bottom: 3em;
+}
+
+.tutor-tools {
+  border: none;
+  color: rgba(255, 255, 255, 0.9);
+  display: flex;
+  gap: 10px;
+  align-items: center;
+}
+
+.tutor-tools legend {
+  display: none;
+}
+
+.tutor-tools label {
+  font-size: 14px;
+}
+
+.selectors {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+}
+
+.selectors label {
+  display: flex;
+  flex-direction: column;
+  font-size: 13px;
+  color: rgba(255, 255, 255, 0.9);
+}
+
+.selectors select {
+  margin-top: 6px;
+  padding: 6px 2px;
+  border-radius: 8px;
+  border: none;
+  background: rgba(255, 255, 255, 0.04);
+  color: inherit;
+}
+
+/* Ensure select dropdowns keep dark background and readable text when opened */
+.selectors select,
+.selectors select:focus,
+.selectors select:active {
+  background: rgba(255, 255, 255, 0.04);
+  color: inherit;
+}
+
+/* Options inside native select elements can be styled inconsistently across browsers */
+.selectors select option {
+  background-color: rgba(11, 17, 32, 0.95) !important;
+  color: #eef2ff !important;
+  padding: 4px 8px;
+}
+
+/* Additional attempt to keep dropdown readable on some browsers */
+.selectors select::-ms-expand {
+  background: transparent;
+}
+
+/* Custom select widget styles */
+.custom-select {
+  position: relative;
+  display: inline-block;
+  width: 200px;
+  font-size: 14px;
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  background: rgba(255, 255, 255, 0.02);
+}
+
+.custom-select .select-btn {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 6px 2px;
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.04);
+  cursor: pointer;
+  color: inherit;
+  border: none;
+}
+
+.custom-select .select-btn::after {
+  content: '';
+  width: 0;
+  height: 0;
+  border-left: 6px solid transparent;
+  border-right: 6px solid transparent;
+  border-top: 6px solid rgba(255, 255, 255, 0.8);
+  margin-left: 8px;
+  opacity: 0.95;
+}
+
+.custom-select .select-btn:focus {
+  outline: 2px solid rgba(96, 165, 250, 0.25);
+}
+
+.custom-select .options {
+  position: absolute;
+  top: calc(100% + 6px);
+  left: 0;
+  right: 0;
+  background: rgba(11, 17, 32, 0.98);
+  border-radius: 8px;
+  box-shadow: 0 8px 20px rgba(2, 6, 23, 0.6);
+  z-index: 1000;
+  max-height: 220px;
+  overflow: auto;
+  padding: 6px;
+}
+
+.custom-select .option {
+  padding: 8px;
+  border-radius: 6px;
+  color: #eef2ff;
+  cursor: pointer;
+}
+
+.custom-select .option:hover {
+  background: rgba(255, 255, 255, 0.03);
+}
+
+.custom-select .option.selected {
+  background: rgba(96, 165, 250, 0.12);
+}
+
+/* Hide the native select but keep it in the DOM for form compatibility */
+.selectors select.native-hidden {
+  display: none !important;
+}
+
+/* Messages section */
+.messages {
+  list-style: none;
+  padding: 18px;
+  margin: 0;
+  height: 60vh;
+  overflow: auto;
+  border-radius: 12px;
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.03), rgba(255, 255, 255, 0.01));
+  box-shadow: 0 8px 30px rgba(2, 6, 23, 0.6);
+}
+
+.messages li {
+  display: flex;
+  gap: 12px;
+  align-items: flex-start;
+  margin-bottom: 8px;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.messages li.user {
+  justify-content: flex-end;
+}
+
+.messages li.assistant {
+  justify-content: flex-start;
+}
+
+/* Avatar / thumbnail for assistant messages */
+.messages li .avatar {
+  width: 40px;
+  height: 40px;
+  flex: 0 0 40px;
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.messages li .avatar img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+/* Bubble that sizes to content */
+.messages li .bubble {
+  display: inline-block;
+  max-width: 72%;
+  padding: 10px 14px;
+  border-radius: 12px;
+  line-height: 1.35;
+  white-space: pre-wrap;
+  word-break: break-word;
+  box-sizing: border-box;
+}
+
+/* Assistant bubble (left) */
+.messages li.assistant .bubble {
+  background: rgba(255, 255, 255, 0.06);
+  color: #e6eef8;
+  margin-left: 8px;
+}
+
+/* User bubble (right) */
+.messages li.user .bubble {
+  background: linear-gradient(90deg, #2563eb, #60a5fa);
+  color: white;
+  margin-right: 8px;
+}
+
+/* Form section */
+form {
+  display: flex;
+  gap: 8px;
+  margin-top: 6px;
+}
+
+form input {
+  flex: 1;
+  padding: 14px;
+  border-radius: 12px;
+  border: none;
+  background: rgba(255, 255, 255, 0.06);
+  color: inherit;
+  outline: none;
+}
+
+form input::placeholder {
+  color: rgba(255, 255, 255, 0.6);
+}
+
+form button {
+  padding: 12px 16px;
+  border-radius: 12px;
+  border: none;
+  background: linear-gradient(90deg, #7c3aed, #4f46e5);
+  color: #fff;
+  font-weight: 600;
+}
+
+/* Media queries */
+@media (max-width: 900px) {
+  header h1 {
+    font-size: 26px;
+  }
+  
+  .messages {
+    height: 50vh;
+  }
+}
