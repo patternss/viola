@@ -1,0 +1,1 @@
+Moi! Olen Viola, sinun virtuaaliopettajasi. Ylhäältä voit vaihdella ominaisuuksiani, valita opetettavan aiheen, sekä käytössä olevan kielimallin! Voit vaihtaa asetuksia myöhemmin lennosta ja aloittaa koko opetussession uudestaan kirjoittamalla !restart. Aiheen valinta aloittaa uuden keskustelun automaattisesti. Kerro kun olet viimeistellyt asetukset ja olet valmis aloittamaan!

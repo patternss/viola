@@ -173,6 +173,18 @@
     const text = inputText.value && inputText.value.trim();
     if(!text) return;
 
+    // Handle !restart command
+    if(text === '!restart'){
+      // Clear messages and restart session
+      messages.length = 0;
+      messagesEl.innerHTML = '';
+      inputText.value = '';
+      inputText.focus();
+      // Request new startup message
+      await handleTopicChange();
+      return;
+    }
+
     addMessage(role, text);
     messages.push({ role, content: text });
 

@@ -65,23 +65,15 @@ async def chat_endpoint(request: ChatRequest):
 async def get_startup_message(topic: str = ""):
     """Get an initial startup message for a given topic"""
     try:
-        # Create a simple startup message payload
-        startup_payload = {
-            "messages": [{"role": "user", "content": f"Give a brief introduction about the topic: {topic}"}],
-            "token": "startup",
-            "model": "deepseek-r1",
-            "topic": topic,
-            "tutor_tools": [],
-            "use_rag": False
-        }
+        from chat.assistant.assistant import _load_startup_text
         
-        # Generate startup message using the assistant
-        response_text = generate_response(startup_payload)
+        # Load the startup text from file
+        startup_text = _load_startup_text()
         
-        return StartupMessageResponse(reply=response_text)
+        return StartupMessageResponse(reply=startup_text)
         
     except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Error generating startup message: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Error loading startup message: {str(e)}")
 
 @router.get("/models")
 async def get_available_models():

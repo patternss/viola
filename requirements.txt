@@ -1,12 +1,20 @@
+# FastAPI and server
 fastapi
 uvicorn[standard]
-aiofiles
-anyio
 pydantic
+
+# AI and LLM integration
 ollama
 jinja2
+
+# RAG and document processing
 langchain-community
+langchain
 chromadb
 sentence-transformers
-torch
-pyarrow
+
+# Document loaders (for ingestion script)
+pypdf
+
+# Optional: Performance and data handling
+# torch  # Will be installed automatically with sentence-transformers if needed

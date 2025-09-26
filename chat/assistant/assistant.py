@@ -5,20 +5,16 @@ from pathlib import Path
 import json
 import re
 from jinja2 import Template
-from langchain_community.vectorstores import Chroma
-from langchain_community.embeddings import HuggingFaceEmbeddings
 
 
 # Mapping of front-end model names to backend model identifiers (fill values later)
 # Example keys should match options in the front-end <select> (e.g. 'Poro-2', 'deepseek-r1')
 MODELS: Dict[str, str] = {
     'Poro-2': 'hf.co/tensorblock/LumiOpen_Llama-Poro-2-8B-Instruct-GGUF',
-    'deepseek-r1': 'deepseek-r1',
+    'Ahma-3': 'hf.co/QuantFactory/Ahma-3B-GGUF:Q8_0', #'hf.co/QuantFactory/Ahma-3B-GGUF:Q4_K_M',
 }
 
-# Pedagogical prompt for the assistant
-pedagogical_prompt = """Käyttäen mahdollista RAG kontekstia alla sekä omia tietojasi, 
-ja vastaa näiden pohjalta käyttäjän kysymykseen."""
+
 
 # Vectorstore globals (injected at FastAPI startup)
 _retriever = None
@@ -41,15 +37,38 @@ def get_retriever():
 
 
 
-def _load_beginning_preprompt() -> str:
-    "Load the Jinja2-ready session beginning prompt from the prompts folder."
-    
+def _load_beginning_preprompt(topic: str = "") -> str:
+    """Load and render the session beginning prompt with the given topic."""
+    prompt_path = Path(__file__).resolve().parents[2] / "prompts" / "session_beginning_prompt.md"
+    template_content = prompt_path.read_text(encoding="utf-8")
+    try:
+        return Template(template_content).render(TOPIC=topic)
+    except Exception:
+        return template_content
+
+
+def _load_system_prompt() -> str:
+    """Load the system prompt from the prompts folder."""
+    system_prompt_path = Path(__file__).resolve().parents[2] / "prompts" / "system_prompt.md"
+    return system_prompt_path.read_text(encoding="utf-8")
+
+
+def _load_pedagogical_prompt() -> str:
+    """Load the pedagogical prompt from the prompts folder."""
+    pedagogical_prompt_path = Path(__file__).resolve().parents[2] / "prompts" / "pedagogical_prompt.md"
+    return pedagogical_prompt_path.read_text(encoding="utf-8")
+
+
+def _load_startup_text() -> str:
+    """Load the chat startup text from the prompts folder."""
+    startup_text_path = Path(__file__).resolve().parents[2] / "prompts" / "chat_startup_text.md"
+    return startup_text_path.read_text(encoding="utf-8")
+
+
+def _load_session_beginning_prompt() -> str:
+    """Load the raw session beginning prompt template from the prompts folder."""
     prompt_path = Path(__file__).resolve().parents[2] / "prompts" / "session_beginning_prompt.md"
     return prompt_path.read_text(encoding="utf-8")
-    
-
-
-beginning_preprompt = _load_beginning_preprompt()
 
 
 
@@ -98,10 +117,16 @@ def generate_response(payload: Dict[str, Any]) -> str:
       {
         'messages': [ {'role': 'user'|'assistant', 'content': '...'}, ... ],
         'token': '...',  # currently unused / mock
-        'tutor_tools': [...],
+        'tutor_tools': [...],  # Available options: 'pedagogy_prompt', 'RAG', 'guardrails', 'evaluator'
         'topic': '...',
-        'model': 'deepseek-r1'
+        'model': 'Poro-2'
       }
+
+    Tutor Tools:
+      - 'pedagogy_prompt': Includes pedagogical guidelines for teaching approach
+      - 'RAG': Retrieval-Augmented Generation - uses document context for answers
+      - 'guardrails': Content safety and appropriateness filters (not yet implemented)
+      - 'evaluator': Response quality evaluation tools (not yet implemented)
 
     Returns: assistant reply string or an error description.
     """
@@ -115,33 +140,44 @@ def generate_response(payload: Dict[str, Any]) -> str:
     front_model = payload.get("model") or ""
     model_name = MODELS.get(front_model, front_model) or "deepseek-r1"
 
-    # Render the beginning preprompt with Jinja2 using provided topic (if any)
-    topic = payload.get("topic") or ""
-    try:
-        rendered_beginning = Template(beginning_preprompt).render(TOPIC=topic)
-    except Exception:
-        rendered_beginning = beginning_preprompt
-
-    # Decide if we need RAG via a simple router - keep this lightweight here
-    # If the payload explicitly asked for tutor_tools or RAG handling, we can attach context later
-    rag_context = ""
-    # If frontend requested tools that imply RAG, include context
+    # get selected tutor tools
     tutor_tools = payload.get("tutor_tools") or []
-    if "RAG" in (tutor_tools or []) or payload.get("use_rag"):
-        # use the last user message as query
-        last_user = next((m for m in reversed(messages) if m.get("role") == "user"), None)
-        if last_user:
-            rag_context = fetchDocuments(last_user.get("content", ""))
+    
+    # Check if this is the user's first message
+    is_first_message = len([m for m in messages if m.get("role") == "user"]) <= 1
+    
+    system_prompt = _load_system_prompt()
+    system_prompt_parts = [system_prompt]
+    prompts_for_debug = ['system prompt loaded']
+    
+    # Add session beginning prompt for first message
+    if is_first_message:
+        topic = payload.get("topic") or ""
+        session_beginning = _load_beginning_preprompt(topic)
+        system_prompt_parts.append(session_beginning)
+        prompts_for_debug.append('session beginning prompt added')
+    
+    # Check if pedagogical prompt should be included
+    if "pedagogy_prompt" in tutor_tools:
+        pedagogical_content = _load_pedagogical_prompt()
+        system_prompt_parts.append(pedagogical_content)
+        prompts_for_debug.append('pedagogical prompt added')
 
-    # Build system prompt(s)
-    system_prompt_parts = [rendered_beginning]
-    if rag_context:
-        system_prompt_parts.append(pedagogical_prompt + "\n\n" + rag_context)
-    else:
-        system_prompt_parts.append(pedagogical_prompt)
+    if "RAG" in tutor_tools:
+        try:
+            rag_context = fetchDocuments(messages[-1].get("content", ""))
+            system_prompt_parts.append(rag_context)
+            prompts_for_debug.append('RAG context added')
+        except Exception as e:
+            print(f"Error fetching RAG context: {e}")
+
+    print("tutor_tools selected:", tutor_tools)
+    print("Prompts used in this request:", prompts_for_debug)
 
     system_prompt = "\n\n".join(system_prompt_parts)
 
+    with open("debug.log", "a") as f:
+        print(f"=== {system_prompt} ===", file=f)
     # Prepare messages for the model: system prompt first
     model_messages = [{"role": "system", "content": system_prompt}] + messages
 
@@ -168,9 +204,9 @@ def generate_response(payload: Dict[str, Any]) -> str:
         return "Error: unable to parse model response"
 
 
+
 if __name__ == "__main__":
-    # Small interactive demo when running this module directly.
-    print("assistant.py demo. Type a message (Ctrl-C to quit).")
+    
     model = list(MODELS.values())[0]
     try:
         while True:
